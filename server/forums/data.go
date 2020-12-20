@@ -23,8 +23,8 @@ type DBInterface struct{ Db *sql.DB }
 
 func NewDBInterface(db *sql.DB) *DBInterface { return &DBInterface{Db: db} }
 
-func (slice []string) TrimEachElem() []string {
-	slice []string result;
+func TrimEachElem(slice []string) []string {
+	var result []string
 	for _, v := range slice {
 		result = append(result, strings.Trim(v))
 	}
@@ -45,7 +45,7 @@ func (s *DBInterface) ListForums() ([]*Forum, error) {
 		if err := rows.Scan(&forum.Id, &forum.Name, &forum.TopicKeyword, &users_string); err != nil {
 			return nil, err
 		}
-		forum.Users = strings.Split(users_string, ",").TrimEachElem();
+		forum.Users = TrimEachElem(strings.Split(users_string, ","))
 		result = append(result, &forum)
 	}
 	if result == nil {
@@ -57,23 +57,22 @@ func (s *DBInterface) ListForums() ([]*Forum, error) {
 func (s *DBInterface) AddUser(r *AddUserRequest) error {
 	var requests []string
 	var forums, err = s.ListForums()
+	if err != nil {
+		return err
+	}
 	for _, interest := range r.Interests {
 		for _, forum := range forums {
-			if interest == forum.TopicKeyword {				
-				requests = append(requests, "UPDATE forums SET users = '"
-				 + strings.Join(append(forum.Users, r.Name), ",")
-				  + "' WHERE id="
-				   + strconv.FormatInt(forum.Id, 10))
+			if interest == forum.TopicKeyword {
+				requests = append(requests, "UPDATE forums SET users = '"+strings.Join(append(forum.Users, r.Name), ",")+"' WHERE id="+strconv.FormatInt(forum.Id, 10))
 			}
 		}
 	}
 
-
 	for _, r := range requests {
-		fmt.Println("req:", r);
+		fmt.Println("req:", r)
 	}
 
-	//_, err = s.Db.Exec(request)			
+	//_, err = s.Db.Exec(request)
 	//return err
-	return nil;
+	return nil
 }
