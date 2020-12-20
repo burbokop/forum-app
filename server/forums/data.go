@@ -1,4 +1,4 @@
-package channels
+package forums
 
 import (
 	"database/sql"
@@ -7,25 +7,20 @@ import (
 	"strings"
 )
 
-type VirtualMachine struct {
-	Id             int64  `json:"id"`
+type Forum struct {
+	Id             int64
 	Name           string `json:"name"`
-	CpuCount       int64  `json:"cpuCount"`
-	TotalDiskSpace int64  `json:"totalDiskSpace"`
+	TopicKeyword   string `json:"topicKeyword"`
+	Users string[]  `json:"users"`
 }
 
-type VMStorage struct {
-	Db *sql.DB
+type AddUserRequest struct {
+	Name string `json:"name"`
+	Interests string[] `json:"interests"`
 }
 
-func NewStore(db *sql.DB) *VMStorage {
-	return &VMStorage{Db: db}
-}
-
-type ConnectionRequest struct {
-	DiskId int64 `json:"diskId"`
-	VmId   int64 `json:"vmId"`
-}
+type DBInterface struct { Db *sql.DB }
+func NewDBInterface(db *sql.DB) *DBInterface { return &DBInterface{Db: db} }
 
 func ParseDiscListString(str string) []int64 {
 	var result []int64
@@ -68,7 +63,7 @@ func ContainsInSlice(s []int64, elem int64) bool {
 	return false
 }
 
-func (s *VMStorage) LoadTotalDiscSpace(discs []int64) int64 {
+func (s *DBInterface) LoadForums(discs []int64) int64 {
 	var result int64
 	for i, elem := range discs {
 		var request = "SELECT disk_space FROM discs WHERE id=" + strconv.FormatInt(elem, 10) + ";"
@@ -89,29 +84,25 @@ func (s *VMStorage) LoadTotalDiscSpace(discs []int64) int64 {
 	return result
 }
 
-func (s *VMStorage) ListVirtualMachines() ([]*VirtualMachine, error) {
-	rows, err := s.Db.Query("SELECT id, name, cpu_count, connected_discs FROM virtual_machines LIMIT 200")
+func (s *DBInterface) ListForums() ([]*Forum, error) {
+	rows, err := s.Db.Query("SELECT id, name, topic_keyword, subscribed_users FROM forums LIMIT 200")
 	if err != nil {
 		return nil, err
-	}
-
+	}	
 	defer rows.Close()
 
-	var res []*VirtualMachine
+	var result []*Forum
 	for rows.Next() {
-		var c VirtualMachine
-		var connected_disks string
-		if err := rows.Scan(&c.Id, &c.Name, &c.CpuCount, &connected_disks); err != nil {
+		var forum Forum
+		if err := rows.Scan(&forum.Id, &forum.Name, &forum.TopicKeyword, &forum.Users); err != nil {
 			return nil, err
 		}
-		c.TotalDiskSpace = s.LoadTotalDiscSpace(ParseDiscListString(connected_disks))
-
-		res = append(res, &c)
+		result = append(result, &c)
 	}
-	if res == nil {
-		res = make([]*VirtualMachine, 0)
+	if result == nil {
+		result = make([]*VirtualMachine, 0)
 	}
-	return res, nil
+	return result, nil
 }
 
 type VMNotFoundError struct{}
@@ -120,7 +111,7 @@ func (e *VMNotFoundError) Error() string {
 	return "VM not found"
 }
 
-func (s *VMStorage) ConnectDisk(arg *ConnectionRequest) error {
+func (s *VMStorage) AddUser(arg *AddUserRequest) error {
 	rows, err := s.Db.Query("SELECT connected_discs FROM virtual_machines WHERE id=$1", arg.VmId)
 	if err != nil {
 		return err
