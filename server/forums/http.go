@@ -2,19 +2,16 @@ package forums
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/burbokop/forum-app/server/tools"
 )
 
-// Channels HTTP handler.
-type HttpVmListHandlerFunc http.HandlerFunc
-type HttpConnectDiskHandlerFunc http.HandlerFunc
+type HttpListForumsHandlerFunc http.HandlerFunc
+type HttpAddUserHandlerFunc http.HandlerFunc
 
-// HttpHandler creates a new instance of channels HTTP handler.
-func HttpVmListHandler(dbi *DBInterface) HttpVmListHandlerFunc {
+func HttpListForumsHandler(dbi *DBInterface) HttpListForumsHandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			res, err := dbi.ListForums()
@@ -30,10 +27,9 @@ func HttpVmListHandler(dbi *DBInterface) HttpVmListHandlerFunc {
 	}
 }
 
-func HttpConnectDiskHandler(dbi *DBInterface) HttpConnectDiskHandlerFunc {
+func HttpAddUserHandler(dbi *DBInterface) HttpAddUserHandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
-			fmt.Println("Disk connecting request recieved.")
 			var c AddUserRequest
 			if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
 				log.Printf("Error decoding request input: %s", err)
