@@ -4,26 +4,26 @@ const channels = require('./interface/client');
 
 const client = channels.Client('http://localhost:8080');
 
-// Scenario 1: Display available virtual mashines.
-client.listVirtualMashines()
+// Scenario 1: List Forums
+client.listForums()
     .then((list) => {
         console.log('=== Scenario 1 ===');
-        console.log('Available virtual mashines:');
+        console.log('Forums:');
         list.forEach((c) => console.log(c));
     })
     .catch((e) => {
-        console.log(`Problem listing available virtual mashines: ${e.message}`);
+        console.log(`Problem listing forums: ${e.message}`);
     });
 
-// Scenario 2: Connect disc.
-client.connectDisc(0, 1)
+// Scenario 2: Add user.
+client.addUser("robert", [ "music", "programming" ])
     .then((resp) => {
         console.log('=== Scenario 2 ===');
-        console.log('Disc connection responce:');
+        console.log('Adding user responce:');
         for(const r of resp) {
             console.log(r);
         }
     })
     .catch((e) => {
-        console.log(`Problem creating a new channel: ${e.message}`);
+        console.log(`Problem adding user: ${e.message}`);
     });

@@ -2,7 +2,6 @@ package forums
 
 import (
 	"database/sql"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -31,6 +30,18 @@ func TrimEachElem(slice []string) []string {
 	return result
 }
 
+func unique(slice []string) []string {
+	keys := make(map[string]bool)
+	result := []string{}
+	for _, entry := range slice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			result = append(result, entry)
+		}
+	}
+	return result
+}
+
 func (dbi *DBInterface) ListForums() ([]*Forum, error) {
 	rows, err := dbi.Db.Query("SELECT id, name, topic_keyword, subscribed_users FROM forums LIMIT 200")
 	if err != nil {
@@ -45,7 +56,9 @@ func (dbi *DBInterface) ListForums() ([]*Forum, error) {
 		if err := rows.Scan(&forum.Id, &forum.Name, &forum.TopicKeyword, &users_string); err != nil {
 			return nil, err
 		}
-		forum.Users = TrimEachElem(strings.Split(users_string, ","))
+		if len(users_string) > 0 {
+			forum.Users = TrimEachElem(strings.Split(users_string, ","))
+		}
 		result = append(result, &forum)
 	}
 	if result == nil {
@@ -63,16 +76,23 @@ func (dbi *DBInterface) AddUser(r *AddUserRequest) error {
 	for _, interest := range r.Interests {
 		for _, forum := range forums {
 			if interest == forum.TopicKeyword {
-				requests = append(requests, "UPDATE forums SET users = '"+strings.Join(append(forum.Users, r.Name), ",")+"' WHERE id="+strconv.FormatInt(forum.Id, 10))
+				var new_data string
+				if len(forum.Users) > 0 {
+					new_data = strings.Join(unique(append(forum.Users, r.Name)), ",")
+				} else {
+					new_data = r.Name
+				}
+				requests = append(requests, "UPDATE forums SET subscribed_users = '"+new_data+"' WHERE id="+strconv.FormatInt(forum.Id, 10))
 			}
 		}
 	}
 
 	for _, r := range requests {
-		fmt.Println("req:", r)
+		_, err = dbi.Db.Exec(r)
+		if err != nil {
+			return err
+		}
 	}
 
-	//_, err = s.Db.Exec(request)
-	//return err
 	return nil
 }

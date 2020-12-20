@@ -3,8 +3,8 @@ const http = require('../common/http');
 const Client = (baseUrl) => {
     const client = http.Client(baseUrl);
     return {
-        listVirtualMashines: () => client.get('/vm_list'),
-        connectDisc: (diskId, vmId) => client.post('/connect_disc', { diskId: diskId, vmId: vmId })
+        listForums: () => client.get('/forums'),
+        addUser: (user, interests) => client.post('/add_user', { name: user, interests: Array.isArray(interests) ? interests : [ interests ] })
     }
 
 };

@@ -7,7 +7,7 @@ CREATE TABLE forums (
 );
 
 INSERT INTO forums (id, name, topic_keyword, subscribed_users) 
-  VALUES (0, 'How to create library for c++ by using golang', 'c++, go', 'marina');
+  VALUES (0, 'How to create library for c++ by using golang', 'programming', 'marina');
 
 INSERT INTO forums (id, name, topic_keyword, subscribed_users) 
   VALUES (1, 'Birthday of Yakunovich', 'politics', '');
