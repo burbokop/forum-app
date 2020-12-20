@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/burbokop/architecture-lab3/server/tools"
+	"github.com/burbokop/forum-app/server/tools"
 )
 
 // Channels HTTP handler.

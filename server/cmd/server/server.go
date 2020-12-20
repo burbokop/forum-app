@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/burbokop/architecture-lab3/server/channels"
+	"github.com/burbokop/forum-app/server/channels"
 )
 
 type HttpPortNumber int

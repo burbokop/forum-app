@@ -22,66 +22,13 @@ type AddUserRequest struct {
 type DBInterface struct { Db *sql.DB }
 func NewDBInterface(db *sql.DB) *DBInterface { return &DBInterface{Db: db} }
 
-func ParseDiscListString(str string) []int64 {
-	var result []int64
-	var lst = strings.Split(str, ",")
-
-	for _, element := range lst {
-		var num, err = strconv.ParseInt(strings.Trim(element, " "), 10, 64)
-		if err == nil && num >= 0 {
-			result = append(result, num)
-		} else {
-			fmt.Println("Warning: disk id is invalid (id won't be used):", element, err)
-		}
-	}
-
-	return result
-}
-
-func removeDuplicateValues(intSlice []int64) []int64 {
-	keys := make(map[int64]bool)
-	list := []int64{}
-
-	// If the key(values of the slice) is not equal
-	// to the already present value in new slice (list)
-	// then we append it. else we jump on another element.
-	for _, entry := range intSlice {
-		if _, value := keys[entry]; !value {
-			keys[entry] = true
-			list = append(list, entry)
-		}
-	}
-	return list
-}
-
-func ContainsInSlice(s []int64, elem int64) bool {
+func Contains(s []string, elem string) bool {
 	for _, v := range s {
 		if v == elem {
 			return true
 		}
 	}
 	return false
-}
-
-func (s *DBInterface) LoadForums(discs []int64) int64 {
-	var result int64
-	for i, elem := range discs {
-		var request = "SELECT disk_space FROM discs WHERE id=" + strconv.FormatInt(elem, 10) + ";"
-		rows, err := s.Db.Query(request)
-		if err == nil {
-			defer rows.Close()
-			var discSpace int64
-			if rows.Next() {
-				if err := rows.Scan(&discSpace); err != nil {
-					fmt.Println("Warning: error while scaning sql responce: ", err, "( id: ", elem, ")")
-				}
-				result += discSpace
-			}
-		} else {
-			fmt.Println("Warning: error while loading disc info (i:", i, ", id:", elem, ", err:", err)
-		}
-	}
-	return result
 }
 
 func (s *DBInterface) ListForums() ([]*Forum, error) {
@@ -105,13 +52,12 @@ func (s *DBInterface) ListForums() ([]*Forum, error) {
 	return result, nil
 }
 
-type VMNotFoundError struct{}
 
-func (e *VMNotFoundError) Error() string {
-	return "VM not found"
-}
+func (s *VMStorage) AddUser(request *AddUserRequest) error {
+	var forums = ListForums();
 
-func (s *VMStorage) AddUser(arg *AddUserRequest) error {
+	request.
+
 	rows, err := s.Db.Query("SELECT connected_discs FROM virtual_machines WHERE id=$1", arg.VmId)
 	if err != nil {
 		return err

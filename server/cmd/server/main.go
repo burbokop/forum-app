@@ -8,7 +8,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/burbokop/architecture-lab3/server/db"
+	"github.com/burbokop/forum-app/server/db"
 )
 
 var httpPortNumber = flag.Int("p", 8080, "HTTP port number")
