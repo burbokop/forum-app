@@ -26,13 +26,13 @@ func NewDBInterface(db *sql.DB) *DBInterface { return &DBInterface{Db: db} }
 func TrimEachElem(slice []string) []string {
 	var result []string
 	for _, v := range slice {
-		result = append(result, strings.Trim(v))
+		result = append(result, strings.Trim(v, " "))
 	}
 	return result
 }
 
-func (s *DBInterface) ListForums() ([]*Forum, error) {
-	rows, err := s.Db.Query("SELECT id, name, topic_keyword, subscribed_users FROM forums LIMIT 200")
+func (dbi *DBInterface) ListForums() ([]*Forum, error) {
+	rows, err := dbi.Db.Query("SELECT id, name, topic_keyword, subscribed_users FROM forums LIMIT 200")
 	if err != nil {
 		return nil, err
 	}
@@ -54,9 +54,9 @@ func (s *DBInterface) ListForums() ([]*Forum, error) {
 	return result, nil
 }
 
-func (s *DBInterface) AddUser(r *AddUserRequest) error {
+func (dbi *DBInterface) AddUser(r *AddUserRequest) error {
 	var requests []string
-	var forums, err = s.ListForums()
+	var forums, err = dbi.ListForums()
 	if err != nil {
 		return err
 	}

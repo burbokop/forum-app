@@ -14,11 +14,10 @@ type HttpVmListHandlerFunc http.HandlerFunc
 type HttpConnectDiskHandlerFunc http.HandlerFunc
 
 // HttpHandler creates a new instance of channels HTTP handler.
-func HttpVmListHandler(store *VMStorage) HttpVmListHandlerFunc {
+func HttpVmListHandler(dbi *DBInterface) HttpVmListHandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
-			fmt.Println("VM list request recieved.")
-			res, err := store.ListVirtualMachines()
+			res, err := dbi.ListForums()
 			if err != nil {
 				log.Printf("Error making query to the db: %s", err)
 				tools.WriteJsonInternalError(rw)
@@ -31,19 +30,19 @@ func HttpVmListHandler(store *VMStorage) HttpVmListHandlerFunc {
 	}
 }
 
-func HttpConnectDiskHandler(store *VMStorage) HttpConnectDiskHandlerFunc {
+func HttpConnectDiskHandler(dbi *DBInterface) HttpConnectDiskHandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			fmt.Println("Disk connecting request recieved.")
-			var c ConnectionRequest
+			var c AddUserRequest
 			if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
 				log.Printf("Error decoding request input: %s", err)
 				tools.WriteJsonBadRequest(rw, "bad JSON payload")
 				return
 			}
-			err := store.ConnectDisk(&c)
+			err := dbi.AddUser(&c)
 			if err == nil {
-				res, err := store.ListVirtualMachines()
+				res, err := dbi.ListForums()
 				if err == nil {
 					tools.WriteJsonOk(rw, res)
 				} else {
