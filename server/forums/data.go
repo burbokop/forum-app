@@ -59,8 +59,11 @@ func (s *DBInterface) AddUser(r *AddUserRequest) error {
 	var forums, err = s.ListForums()
 	for _, interest := range r.Interests {
 		for _, forum := range forums {
-			if(interest == forum.TopicKeyword) {
-				requests = append(requests, "UPDATE forums SET users = '" + new_data + "' WHERE id=" + strconv.FormatInt(arg.VmId, 10))
+			if interest == forum.TopicKeyword {				
+				requests = append(requests, "UPDATE forums SET users = '"
+				 + strings.Join(append(forum.Users, r.Name), ",")
+				  + "' WHERE id="
+				   + strconv.FormatInt(forum.Id, 10))
 			}
 		}
 	}

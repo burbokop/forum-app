@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/burbokop/forum-app/server/channels"
+	"github.com/burbokop/forum-app/server/forums"
 	"github.com/google/wire"
 )
 
